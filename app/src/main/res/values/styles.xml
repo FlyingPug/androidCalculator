@@ -3,13 +3,11 @@
     <style name="ButtonStyle" parent="@android:style/Widget.Button">
         <item name="android:background">@drawable/rounded</item>
         <item name="android:textSize">34sp</item>
+        <item name="android:textColor">@color/white</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:backgroundTint">@color/regularButton</item>
     </style>
-    <style name="HighlightButtonTheme" parent="@android:style/Widget.Button">
-        <item name="android:background">@drawable/rounded</item>
-        <item name="android:textSize">34sp</item>
-        <item name="android:fontFamily">sans-serif</item>
+    <style name="HighlightButtonStyle" parent="ButtonStyle">
         <item name="android:backgroundTint">@color/highlightButton</item>
     </style>
 </resources>

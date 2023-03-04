@@ -4,111 +4,141 @@ import android.widget.TextView
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class CalculatorController(val outputTextView : TextView, val colorNormal : Int, val colorError : Int) {
-    init
-    {
-        outputTextView.text = ""
-    }
-    var currentOperator = ""
+enum class Operation {
+    PLUS, MINUS, MULTIPLE, DIVIDE, EMPTY
+}
+
+enum class Status {
+    WORKING, ERROR, DONE
+}
+class CalculatorController() {
+    var currentOperator = Operation.EMPTY
     var prevNumber = "0"
-    var waitForClear = false
+    var currentNumber = ""
+    var status = Status.WORKING
+
+    // функция, позволяющая контролировать вывод при необходимости
+    fun getOutput() : String
+    {
+        return currentNumber
+    }
 
     // добавляет цифру к текущему числу
     fun addNumber(str : String)
     {
-        if(waitForClear) clear() // если операция была выполнена, очищаем для новой операции
+        if(status != Status.WORKING) clear() // если контроллер завершил работу, очищаем для ввода нового числа
 
-        if(outputTextView.text.length >= 12) return // проверяем на соответствие длине поля (иначе
-        if(outputTextView.text =="0") clear() // если 0, убираем несущественный
-        outputTextView.append(str)
+        if(currentNumber.length >= 12) return // проверяем на соответствие длине поля (иначе
+        if(currentNumber  =="0") clear() // если 0, убираем несущественный
+        currentNumber += str
     }
 
     // добавляет "," к текущему числу
     fun addDecimal()
     {
-        if(waitForClear) clear()
-        if(outputTextView.text.isEmpty()) { // начинаем с 0,
-            outputTextView.text = "0,"
+        if(status != Status.WORKING) clear()
+        if(currentNumber.isEmpty()) { // начинаем с 0,
+            currentNumber = "0,"
             return
         }
-        if(!outputTextView.text.contains(",")) outputTextView.append(",") // если запятой уже нет, добавляем
+        if(!currentNumber.contains(",")) currentNumber += "," // если запятой уже нет, добавляем
     }
 
     // указать текущее  действие ( + - * / )
-    fun setOperation(newOperator : String)
+    fun setOperation(newOperator : Operation)
     {
-        if(waitForClear) waitForClear = false // продолжаем действие с вычесленным числом
-        if(outputTextView.text.isEmpty()) prevNumber = "0" // если нету числа, c которым будем выполнять операцию, будем выполнять ее с 0
-        if(currentOperator != "") // если это уже не первое действие, выисляем предыдущее значение
+        if(status == Status.DONE) status = Status.WORKING // продолжаем действие с вычесленным числом
+        else if(status == Status.ERROR)
+        {
+            clear()
+            return
+        }
+        if(currentNumber.isEmpty()) prevNumber = "0" // если нету числа, c которым будем выполнять операцию, будем выполнять ее с 0
+        if(currentOperator != Operation.EMPTY) // если это уже не первое действие, выисляем предыдущее значение
         {
             equal()
         }
-        prevNumber = outputTextView.text.toString() // сохраняем текущее число
+        prevNumber = currentNumber.toString() // сохраняем текущее число
         currentOperator = newOperator // сохраняем текущее действие
-        outputTextView.text = "" // подготавливаем для работы с новым числом
+        currentNumber = "" // подготавливаем для работы с новым числом
     }
 
     // меняет знак с между + и -
     fun changeSign()
     {
-        if(waitForClear) waitForClear = false
-        if(outputTextView.text.startsWith("-"))  outputTextView.text = outputTextView.text.toString().replace("-","");
-        else outputTextView.text =  "-${outputTextView.text}"
+        if(status == Status.DONE) status = Status.WORKING // продолжаем действие с вычесленным числом
+        else if(status == Status.ERROR)
+        {
+            clear()
+            return
+        }
+        if(currentNumber.startsWith("-"))  currentNumber = currentNumber.replace("-","");
+        else currentNumber =  "-${currentNumber}"
     }
 
     // вычисляет значение выражения
     fun equal()
     {
-        if (currentOperator.isEmpty()) {// если не с чем вычислять - не вычисляем
+        if (currentOperator == Operation.EMPTY) {// если не с чем вычислять - не вычисляем
             return
         }
         try {
-            val currentOperand = (outputTextView.text.toString()).replace(",", ".").toDouble()
+            val currentOperand = currentNumber.replace(",", ".").toDouble()
             val secondOperand = prevNumber.replace(",", ".").toDouble()
             var result = 0.0
             when (currentOperator) {
-                "+" -> result = currentOperand + secondOperand
-                "-" -> result = secondOperand  - currentOperand
-                "*" -> result = currentOperand * secondOperand
-                "/" -> result = secondOperand  / currentOperand
+                Operation.PLUS -> result = currentOperand + secondOperand
+                Operation.MINUS -> result = secondOperand  - currentOperand
+                Operation.MULTIPLE  -> result = currentOperand * secondOperand
+                Operation.DIVIDE -> result = secondOperand  / currentOperand
+                else -> {return}
             }
             clear()
             // благодоря bigdecimal избавляемся от незначимых нулей
-            outputTextView.text = BigDecimal(result).setScale(5, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString().replace(".",",")
-            waitForClear = true// говорим, что результат выражения выведен и мы готовы к работе с новым выражением
+            currentNumber = BigDecimal(result).setScale(5, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString().replace(".",",")
+            status =  Status.DONE// говорим, что результат выражения выведен и мы готовы к работе с новым выражением
         }
         catch (e : Exception)
         {
-            outputTextView.text = "ERROR"
-            outputTextView.setTextColor(colorError)
-            waitForClear = true
+            currentNumber = "ERROR"
+            status = Status.ERROR
         }
     }
 
     // очистка экрана
     fun clear()
     {
-        outputTextView.setTextColor(colorNormal)
-        outputTextView.text = ""
-        currentOperator = ""
+        currentNumber = ""
+        currentOperator = Operation.EMPTY
         prevNumber = "0"
-        waitForClear = false
+        status = Status.WORKING
     }
 
     // тупо деление числа на 100
     fun procent()
     {
-        if(waitForClear) waitForClear = false
-        val number = (outputTextView.text.toString()).replace(",",".").toDouble()
-        outputTextView.text = (number/100).toString().replace(".",",")
+        if(status == Status.DONE) status = Status.WORKING // продолжаем действие с вычесленным числом
+        else if(status == Status.ERROR)
+        {
+            clear()
+            return
+        }
+        if(currentNumber.isEmpty()) return
+        val number = currentNumber.replace(",",".").toDouble()
+        currentNumber = (number/100).toString().replace(".",",")
     }
 
     // удаление последнего символа
     fun remove()
     {
-        if(waitForClear) waitForClear = false
-        if(outputTextView.text.isEmpty()) return
-        outputTextView.text = outputTextView.text.toString().dropLast(1)
+        if(status == Status.DONE) status = Status.WORKING // продолжаем действие с вычесленным числом
+        else if(status == Status.ERROR)
+        {
+            clear()
+            return
+        }
+        if(currentNumber.isEmpty()) return
+        currentNumber = currentNumber.dropLast(1)
 
     }
 

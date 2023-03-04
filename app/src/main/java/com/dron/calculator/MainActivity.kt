@@ -1,47 +1,107 @@
 package com.dron.calculator
 
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.animation.AnimationUtils.loadAnimation
 import android.widget.Button
-import android.widget.ImageButton
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import com.dron.calculator.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityMainBinding
+    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+
+    fun changeColorBasedOnStatus(status: Status, normalColor : Int, errorColor: Int)
+    {
+        when (status) {
+            Status.ERROR -> binding.outputText.setTextColor(errorColor)
+            else -> binding.outputText.setTextColor(normalColor)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val animationAlpha = loadAnimation(this, R.anim.alpha);
+        val calculator = CalculatorController()
+
         val normalColor = ContextCompat.getColor(this, R.color.numberColor)
-        var errorColor = ContextCompat.getColor(this, R.color.errorColor)
-        val calculator = CalculatorController(findViewById(R.id.outputText),normalColor,errorColor)
+        val errorColor = ContextCompat.getColor(this, R.color.errorColor)
 
-        binding.button0.setOnClickListener { calculator.addNumber("0"); it.startAnimation(animationAlpha) }
-        binding.button1.setOnClickListener { calculator.addNumber("1"); it.startAnimation(animationAlpha) }
-        binding.button2.setOnClickListener { calculator.addNumber("2"); it.startAnimation(animationAlpha) }
-        binding.button3.setOnClickListener { calculator.addNumber("3"); it.startAnimation(animationAlpha) }
-        binding.button4.setOnClickListener { calculator.addNumber("4"); it.startAnimation(animationAlpha) }
-        binding.button5.setOnClickListener { calculator.addNumber("5"); it.startAnimation(animationAlpha) }
-        binding.button6.setOnClickListener { calculator.addNumber("6"); it.startAnimation(animationAlpha) }
-        binding.button7.setOnClickListener { calculator.addNumber("7"); it.startAnimation(animationAlpha) }
-        binding.button8.setOnClickListener { calculator.addNumber("8"); it.startAnimation(animationAlpha) }
-        binding.button9.setOnClickListener { calculator.addNumber("9"); it.startAnimation(animationAlpha) }
+        val numberGroup : Group = binding.numberGroup
+        for (id in numberGroup.referencedIds) {
+            val numberButton : Button = findViewById(id)
+            numberButton.setOnClickListener {
+                calculator.addNumber(numberButton.text.toString());
+                it.startAnimation(animationAlpha)
+                binding.outputText.text = calculator.getOutput()
+                changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+            }
+        }
 
-        binding.buttonDecimal.setOnClickListener { calculator.addDecimal(); it.startAnimation(animationAlpha) }
-        binding.buttonAC.setOnClickListener { calculator.clear(); it.startAnimation(animationAlpha) }
-        binding.buttonPlusMinus.setOnClickListener { calculator.changeSign(); it.startAnimation(animationAlpha) }
-        binding.buttonProcent.setOnClickListener { calculator.procent(); it.startAnimation(animationAlpha) }
-        binding.buttonDivide.setOnClickListener { calculator.setOperation("/"); it.startAnimation(animationAlpha)}
-        binding.buttonMultiplie.setOnClickListener { calculator.setOperation("*"); it.startAnimation(animationAlpha)}
-        binding.buttonPlus.setOnClickListener { calculator.setOperation("+"); it.startAnimation(animationAlpha) }
-        binding.buttonMinus.setOnClickListener { calculator.setOperation("-"); it.startAnimation(animationAlpha) }
-        binding.buttonEqual.setOnClickListener { calculator.equal(); it.startAnimation(animationAlpha) }
-        binding.removeButton.setOnClickListener { calculator.remove(); it.startAnimation(animationAlpha) }
+        binding.buttonDecimal.setOnClickListener {
+            calculator.addDecimal()
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+
+        binding.buttonAC.setOnClickListener {
+            calculator.clear();
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.buttonPlusMinus.setOnClickListener {
+            calculator.changeSign();
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.buttonProcent.setOnClickListener {
+            calculator.procent();
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.buttonDivide.setOnClickListener {
+            calculator.setOperation(Operation.DIVIDE);
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.buttonMultiplie.setOnClickListener {
+            calculator.setOperation(Operation.MULTIPLE);
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.buttonPlus.setOnClickListener {
+            calculator.setOperation(Operation.PLUS);
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.buttonMinus.setOnClickListener {
+            calculator.setOperation(Operation.MINUS);
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.buttonEqual.setOnClickListener {
+            calculator.equal();
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
+        binding.removeButton.setOnClickListener {
+            calculator.remove();
+            it.startAnimation(animationAlpha)
+            binding.outputText.text = calculator.getOutput()
+            changeColorBasedOnStatus(calculator.status, normalColor, errorColor)
+        }
     }
 }
