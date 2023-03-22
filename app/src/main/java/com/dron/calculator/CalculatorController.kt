@@ -21,7 +21,8 @@ class CalculatorController() {
         const val MINUS = "-"
         const val EMPTY = ""
         const val POINT = "."
-        const val ERROR_MESSAGE = "ERROR"
+        const val DIVISION_TO_ZERO = "ZERO DIVIDE"
+        const val scaleValue = 5
     }
 
     var currentOperator = Operation.EMPTY
@@ -45,17 +46,17 @@ class CalculatorController() {
     }
 
     fun addNumber(str: String) {
-        if (status != Status.WORKING) clear() // если контроллер завершил работу, очищаем для ввода нового числа
+        if (status != Status.WORKING) clear()
 
-        if (currentNumber.value!!.length >= MAX_NUMBER_LENGTH) return // проверяем на соответствие длине поля (иначе
-        if (currentNumber.value == DEFAULT_NUMBER) clear() // если 0, убираем несущественный
+        if (currentNumber.value!!.length >= MAX_NUMBER_LENGTH) return
+        if (currentNumber.value == DEFAULT_NUMBER) clear()
         currentNumber.value += str
     }
 
     // добавляет "," к текущему числу
     fun addDecimal() {
         if (status != Status.WORKING) clear()
-        if (currentNumber.value!!.isEmpty()) { // начинаем с 0,
+        if (currentNumber.value!!.isEmpty()) {
             currentNumber.value = REAL_BASE
             return
         }
@@ -69,20 +70,20 @@ class CalculatorController() {
             clear()
             return
         }
-        if (currentNumber.value!!.isEmpty()) prevNumber =  ZERO // если нету числа, c которым будем выполнять операцию, будем выполнять ее с 0
+        if (currentNumber.value!!.isEmpty()) prevNumber =  ZERO
         if (currentOperator != Operation.EMPTY) // если это уже не первое действие, выисляем предыдущее значение
         {
             equal()
         }
-        prevNumber = currentNumber.value.toString() // сохраняем текущее число
-        currentOperator = newOperator // сохраняем текущее действие
-        currentNumber.value = "" // подготавливаем для работы с новым числом
+        prevNumber = currentNumber.value.toString()
+        currentOperator = newOperator
+        currentNumber.value = ""
     }
 
     // меняет знак с между + и -
     fun changeSign() {
         if (status == Status.DONE) status =
-            Status.WORKING // продолжаем действие с вычесленным числом
+            Status.WORKING
         else if (status == Status.ERROR) {
             clear()
             _outputColor.value = status
@@ -94,32 +95,33 @@ class CalculatorController() {
 
     // вычисляет значение выражения
     fun equal() {
-        if (currentOperator == Operation.EMPTY) {// если не с чем вычислять - не вычисляем
+        if (currentOperator == Operation.EMPTY) {
             return
         }
-        try {
-            val currentOperand = currentNumber.value!!.replace(COMMA, POINT).toDouble()
-            val secondOperand = prevNumber.replace(COMMA, POINT).toDouble()
-            val result = when (currentOperator) {
-                Operation.PLUS -> currentOperand + secondOperand
-                Operation.MINUS -> secondOperand - currentOperand
-                Operation.MULTIPLE -> currentOperand * secondOperand
-                Operation.DIVIDE -> secondOperand / currentOperand
-                else -> {
-                    return
-                }
-            }
-            clear()
-            // благодоря bigdecimal избавляемся от незначимых нулей
-            currentNumber.value =
-                BigDecimal(result).setScale(5, RoundingMode.HALF_UP).stripTrailingZeros()
-                    .toPlainString().replace(POINT, COMMA)
-            status =
-                Status.DONE// говорим, что результат выражения выведен и мы готовы к работе с новым выражением
-        } catch (e: Exception) {
-            currentNumber.value = ERROR_MESSAGE
+
+        val currentOperand = currentNumber.value!!.replace(COMMA, POINT).toDouble()
+        val secondOperand = prevNumber.replace(COMMA, POINT).toDouble()
+        print(secondOperand)
+        if(currentOperator == Operation.DIVIDE && currentOperand == 0.0)
+        {
+            currentNumber.value = DIVISION_TO_ZERO
             status = Status.ERROR
+            return
         }
+        val result = when (currentOperator) {
+            Operation.PLUS -> currentOperand + secondOperand
+            Operation.MINUS -> secondOperand - currentOperand
+            Operation.MULTIPLE -> currentOperand * secondOperand
+            Operation.DIVIDE -> secondOperand / currentOperand
+            else -> {
+                return
+            }
+        }
+        clear()
+        currentNumber.value =
+            BigDecimal(result).setScale(scaleValue, RoundingMode.HALF_UP).stripTrailingZeros()
+                .toPlainString().replace(POINT, COMMA)
+        status = Status.DONE
     }
 
     // очистка экрана
@@ -134,7 +136,7 @@ class CalculatorController() {
     // тупо деление числа на 100
     fun percent() {
         if (status == Status.DONE) status =
-            Status.WORKING // продолжаем действие с вычесленным числом
+            Status.WORKING
         else if (status == Status.ERROR) {
             clear()
             return
@@ -147,7 +149,7 @@ class CalculatorController() {
     // удаление последнего символа
     fun remove() {
         if (status == Status.DONE) status =
-            Status.WORKING // продолжаем действие с вычесленным числом
+            Status.WORKING
         else if (status == Status.ERROR) {
             clear()
             return

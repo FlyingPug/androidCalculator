@@ -11,6 +11,9 @@ class MainActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
+    private val normalColor by lazy { ContextCompat.getColor(this, R.color.numberColor) }
+    private val errorColor by lazy { ContextCompat.getColor(this, R.color.errorColor) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -18,10 +21,6 @@ class MainActivity : AppCompatActivity() {
         val animationAlpha = loadAnimation(this, R.anim.alpha)
         val calculator = CalculatorController()
 
-        val normalColor = ContextCompat.getColor(this, R.color.numberColor)
-        val errorColor = ContextCompat.getColor(this, R.color.errorColor)
-
-        // возможно это не самый красивый способ, и имеет смысл пройтись по группе кнопок циклом, но хотяб удобно
         val numberButtons = listOf(
             binding.button0,
             binding.button1,
