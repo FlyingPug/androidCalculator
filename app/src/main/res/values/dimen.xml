@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="buttonSize">83dp</dimen>
+    <dimen name="bigButtonSize">182dp</dimen>
+    <dimen name="dividerSize">380dp</dimen>
+    <dimen name="smallButtonSize">48dp</dimen>
+    <dimen name="outputSize">77dp</dimen>
+</resources>
